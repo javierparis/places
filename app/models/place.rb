@@ -3,9 +3,9 @@ class Place
   attr_accessor :id, :formatted_address, :location, :address_components
 
   def initialize(params={})
-    @id = params[:_id].to_s
+    @id = params[:_id].to_s if params[:_id]
     @formatted_address = params[:formatted_address]
-    @location = params[":geometry.geolocation"]
+    @location = Point.new(params['geometry.geolocation'])
     @address_components = []
     params[:address_components].each {|p|
       @address_components << AddressComponent.new(p)
@@ -28,6 +28,27 @@ class Place
 
   def self.find_by_short_name short_name
     self.collection.find('address_components.short_name'=>short_name)
+  end
+
+  def self.to_places docs
+    places=[]
+    docs.map do |doc|
+      places << Place.new(doc)
+    end
+    return places
+  end
+
+  def self.find id
+    result = collection.find({:_id=>BSON::ObjectId.from_string(id)}).first
+    return result.nil? ? nil : Place.new(result)
+  end
+
+  def self.all(offset=0, limit=0)
+    to_places self.collection.find().skip(offset).limit(limit)
+  end
+
+  def destroy
+    self.class.collection.find(:_id=>BSON::ObjectId.from_string(@id)).delete_one
   end
 
 end
