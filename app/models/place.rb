@@ -51,4 +51,37 @@ class Place
     self.class.collection.find(:_id=>BSON::ObjectId.from_string(@id)).delete_one
   end
 
+  def self.get_address_components(sort={:_id=>1},offset=0,limit=99999)
+    self.collection.find().aggregate([
+      {:$project=>{:_id=>1, :address_components=>1,:formatted_address=>1,'geometry.geolocation'=>1}},
+      {:$unwind=>'$address_components'},
+      {:$sort=>sort},
+      {:$skip=>offset},
+      {:$limit=>limit}
+    ])
+    #queries = [{:$project=> ...}]
+    #queries.append({:$limit=>...}] if !limit.nil?
+    #collection.aggregate(queries)
+  end
+
+  def self.get_country_names
+    country_names = []
+    self.collection.find().aggregate([
+      {:$project=>{ 'address_components.long_name'=>1, 'address_components.types'=>1}},
+      {:$unwind => '$address_components'},
+      {:$match=>{'address_components.types'=>'country'}},
+      {:$group=>{ :_id=>'$address_components.long_name'}}
+    ]).to_a.map {|doc| country_names << doc[:_id]}
+    return country_names
+  end
+
+  def self.find_ids_by_country_code country_code
+    country_ids = []
+    self.collection.find().aggregate([
+       {:$unwind => '$address_components'},
+       {:$match=>{'address_components.types'=>'country','address_components.short_name'=>country_code}}
+    ]).to_a.map {|doc| country_ids << doc[:_id].to_s}
+    return country_ids
+  end
+
 end
