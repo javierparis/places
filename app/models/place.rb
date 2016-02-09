@@ -9,7 +9,7 @@ class Place
     @address_components = []
     params[:address_components].each {|p|
       @address_components << AddressComponent.new(p)
-    }
+    } if !params[:address_components].nil?
   end
 
   def self.mongo_client
@@ -27,7 +27,8 @@ class Place
   end
 
   def self.find_by_short_name short_name
-    self.collection.find('address_components.short_name'=>short_name)
+    #self.collection.find( { 'address_components.short_name' : short_name })
+    self.collection.find( { 'address_components.short_name': short_name } )
   end
 
   def self.to_places docs
@@ -94,12 +95,17 @@ class Place
 
   def self.near(point,max_meters=0)
     self.collection.find( { "geometry.geolocation" =>
-        { $near =>
-          { $geometry =>
+        { :$near =>
+          { :$geometry =>
             { :type => "Point" ,
-              :coordinates => point.to_hash[:coordinates] }
+              :coordinates => point.to_hash[:coordinates] },
+            :$maxDistance => max_meters
           }
         } } )
+  end
+
+  def near(max_meters=0)
+    self.class.to_places(self.class.near(@location,max_meters))
   end
 
 end
