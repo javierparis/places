@@ -2,15 +2,14 @@ class Point
 
   attr_accessor :longitude, :latitude
 
+
   def initialize(hash={})
-    if hash
-      if hash[:type] #in GeoJSON Point format
-        @longitude = hash[:coordinates][0]
-        @latitude = hash[:coordinates][1]
-      else #in legacy format
-        @latitude = hash[:lat]
-        @longitude = hash[:lng]
-      end
+    if hash[:type] #in GeoJSON Point format
+      @longitude = hash[:coordinates][0]
+      @latitude = hash[:coordinates][1]
+    else #in legacy format
+      @latitude = hash[:lat]
+      @longitude = hash[:lng]
     end
   end
 
