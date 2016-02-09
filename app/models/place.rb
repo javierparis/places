@@ -84,4 +84,22 @@ class Place
     return country_ids
   end
 
+  def self.create_indexes
+    self.collection.indexes.create_one({ "geometry.geolocation" => Mongo::Index::GEO2DSPHERE })
+  end
+
+  def self.remove_indexes
+    self.collection.indexes.drop_one("geometry.geolocation_2dsphere")
+  end
+
+  def self.near(point,max_meters=0)
+    self.collection.find( { "geometry.geolocation" =>
+        { $near =>
+          { $geometry =>
+            { :type => "Point" ,
+              :coordinates => point.to_hash[:coordinates] }
+          }
+        } } )
+  end
+
 end
