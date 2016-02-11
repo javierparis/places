@@ -28,7 +28,7 @@ class Place
 
   def self.find_by_short_name short_name
     #self.collection.find( { 'address_components.short_name' : short_name })
-    self.collection.find( { 'address_components.short_name': short_name } )
+    self.collection.find( { 'address_components.short_name'=> short_name } )
   end
 
   def self.to_places docs
