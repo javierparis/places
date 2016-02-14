@@ -1,5 +1,5 @@
 class Place
-
+  include ActiveModel::Model
   attr_accessor :id, :formatted_address, :location, :address_components
 
   def initialize(params={})
@@ -18,6 +18,10 @@ class Place
 
   def self.collection
     self.mongo_client['places']
+  end
+
+  def persisted?
+    !@id.nil?
   end
 
   def self.load_all(file_path)
@@ -106,6 +110,14 @@ class Place
 
   def near(max_meters=0)
     self.class.to_places(self.class.near(@location,max_meters))
+  end
+
+  def photos(offset=0,limit=0)
+    photos = []
+    Photo.find_photos_for_place(@id).skip(offset).limit(limit).to_a.each {|doc|
+      photos << Photo.new(doc)
+    }
+    return photos
   end
 
 end

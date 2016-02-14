@@ -4,12 +4,14 @@ class Point
 
 
   def initialize(hash={})
-    if hash[:type] #in GeoJSON Point format
-      @longitude = hash[:coordinates][0]
-      @latitude = hash[:coordinates][1]
-    else #in legacy format
-      @latitude = hash[:lat]
-      @longitude = hash[:lng]
+    if hash
+      if hash[:coordinates] #in GeoJSON Point format
+        @longitude = hash[:coordinates][0]
+        @latitude = hash[:coordinates][1]
+      else #in legacy format
+        @latitude = hash[:lat]
+        @longitude = hash[:lng]
+      end
     end
   end
 
